@@ -37,12 +37,14 @@ const DOM = {
   marksResult: document.getElementById('marks-result'),
   originalComparison: document.getElementById('original-comparison'),
   typedComparison: document.getElementById('typed-comparison'),
-  exportPdfButton: document.getElementById('export-pdf-button'),
+  dashboardButton: document.getElementById('dashboard-button'),
   printReportButton: document.getElementById('print-report-button'),
   reportTitle: document.getElementById('report-title'),
   reportSubtitle: document.getElementById('report-subtitle'),
   reportTimestamp: document.getElementById('report-timestamp')
 };
+
+const PARAGRAPH_TOKEN = '__PARA__';
 
 const state = {
   lessons: [],
@@ -88,6 +90,7 @@ function attachEvents() {
   });
   DOM.submitButton.addEventListener('click', finishTest);
   DOM.resetButton.addEventListener('click', resetSession);
+  DOM.dashboardButton.addEventListener('click', goToDashboard);
   DOM.printReportButton.addEventListener('click', openPrintReport);
   DOM.themeToggle.addEventListener('click', toggleTheme);
   DOM.inputField.addEventListener('keydown', handleKeydown);
@@ -187,12 +190,7 @@ function startPractice() {
   state.student.mode = DOM.modeSelect.value;
   state.activeLesson = selectedLesson;
   state.baseText = selectedLesson.text;
-  state.originalWords = selectedLesson.text
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.split(/\s+/).filter(Boolean).map(normalizeText))
-    .flat();
+  state.originalWords = tokenizeLessonText(selectedLesson.text);
   state.typedWords = [];
   state.currentWordIndex = 0;
   state.backspaceCount = 0;
@@ -287,29 +285,65 @@ function handleTyping(event) {
 }
 
 function getCompletedWords(typedValue) {
-  // Treat newline as a space so Enter doesn't create paragraph mismatches
   const endsWithWhitespace = /\s$/.test(typedValue);
-  const cleaned = typedValue.replace(/\n+/g, ' ');
-  const trimmedValue = cleaned.trim();
-  if (!trimmedValue) {
+  const tokens = tokenizeTypedText(typedValue);
+  if (tokens.length === 0) {
     return [];
   }
 
-  const rawWords = trimmedValue
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .map(normalizeText);
-  if (endsWithWhitespace) {
-    return rawWords;
+  if (!endsWithWhitespace && tokens[tokens.length - 1] !== PARAGRAPH_TOKEN) {
+    tokens.pop();
   }
 
-  if (rawWords.length > 1) {
-    return rawWords.slice(0, -1);
-  }
+  return tokens;
+}
 
-  return [];
+function tokenizeLessonText(text) {
+  const normalized = text.replace(/\r\n/g, '\n');
+  const paragraphs = normalized.split(/\n+/);
+  const tokens = [];
+
+  paragraphs.forEach((paragraph, index) => {
+    const words = paragraph
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(normalizeText);
+
+    if (words.length > 0) {
+      tokens.push(...words);
+    }
+
+    if (index < paragraphs.length - 1) {
+      tokens.push(PARAGRAPH_TOKEN);
+    }
+  });
+
+  return tokens;
+}
+
+function tokenizeTypedText(typedValue) {
+  const normalized = typedValue.replace(/\r\n/g, '\n');
+  const parts = normalized.split(/(\n+)/);
+  const tokens = [];
+
+  parts.forEach((segment) => {
+    if (!segment) return;
+
+    if (/^\n+$/.test(segment)) {
+      tokens.push(PARAGRAPH_TOKEN);
+      return;
+    }
+
+    const words = segment
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(normalizeText);
+
+    tokens.push(...words);
+  });
+
+  return tokens;
 }
 
 function startTimer() {
@@ -365,16 +399,21 @@ function renderLearningAssist(message) {
 }
 
 function updateStats() {
-  const totalTyped = state.typedWords.length;
-  const correctWords = state.typedWords.reduce((count, word, index) => {
-    return count + (index < state.originalWords.length && word === state.originalWords[index] ? 1 : 0);
+  const totalTypedTokens = state.typedWords.length;
+  const totalTypedWords = state.typedWords.filter((token) => token !== PARAGRAPH_TOKEN).length;
+  const originalWordCount = state.originalWords.filter((token) => token !== PARAGRAPH_TOKEN).length;
+  const correctWordCount = state.typedWords.reduce((count, token, index) => {
+    return count + (token !== PARAGRAPH_TOKEN && index < state.originalWords.length && token === state.originalWords[index] ? 1 : 0);
   }, 0);
-  const incorrectWords = totalTyped - correctWords;
+  const correctTokenCount = state.typedWords.reduce((count, token, index) => {
+    return count + (index < state.originalWords.length && token === state.originalWords[index] ? 1 : 0);
+  }, 0);
+  const incorrectWords = totalTypedTokens - correctTokenCount;
   const elapsed = Math.max(1, state.durationSeconds - state.timerSeconds);
-  const wpm = totalTyped > 0 ? Math.round(correctWords / Math.max(1, elapsed / 60)) : 0;
-  const accuracy = totalTyped > 0 ? Math.round((correctWords / totalTyped) * 100) : 100;
-  const progressPercent = state.originalWords.length > 0
-    ? Math.min(100, Math.round((totalTyped / state.originalWords.length) * 100))
+  const wpm = totalTypedWords > 0 ? Math.round(correctWordCount / Math.max(1, elapsed / 60)) : 0;
+  const accuracy = totalTypedTokens > 0 ? Math.round((correctTokenCount / totalTypedTokens) * 100) : 100;
+  const progressPercent = originalWordCount > 0
+    ? Math.min(100, Math.round((totalTypedWords / originalWordCount) * 100))
     : 0;
 
   DOM.wpmDisplay.textContent = `${wpm} WPM`;
@@ -396,14 +435,19 @@ function finishTest() {
   state.timerStarted = false;
   DOM.inputField.disabled = true;
 
-  const totalTyped = state.typedWords.length;
-  const correctWords = state.typedWords.reduce((count, word, index) => {
-    return count + (index < state.originalWords.length && word === state.originalWords[index] ? 1 : 0);
+  const totalTypedTokens = state.typedWords.length;
+  const totalTypedWords = state.typedWords.filter((token) => token !== PARAGRAPH_TOKEN).length;
+  const originalWordCount = state.originalWords.filter((token) => token !== PARAGRAPH_TOKEN).length;
+  const correctTokenCount = state.typedWords.reduce((count, token, index) => {
+    return count + (index < state.originalWords.length && token === state.originalWords[index] ? 1 : 0);
   }, 0);
-  const incorrectWords = totalTyped - correctWords;
+  const correctWordCount = state.typedWords.reduce((count, token, index) => {
+    return count + (token !== PARAGRAPH_TOKEN && index < state.originalWords.length && token === state.originalWords[index] ? 1 : 0);
+  }, 0);
+  const incorrectWords = totalTypedTokens - correctTokenCount;
   const elapsed = Math.max(1, state.durationSeconds - state.timerSeconds);
-  const wpm = totalTyped > 0 ? Math.round(correctWords / Math.max(1, elapsed / 60)) : 0;
-  const accuracy = totalTyped > 0 ? Math.round((correctWords / totalTyped) * 100) : 100;
+  const wpm = totalTypedWords > 0 ? Math.round(correctWordCount / Math.max(1, elapsed / 60)) : 0;
+  const accuracy = totalTypedTokens > 0 ? Math.round((correctTokenCount / totalTypedTokens) * 100) : 100;
   const marks = Math.round(Math.min(100, (accuracy * 0.7) + (Math.min(wpm, 80) / 80) * 30));
 
   const elapsedTime = Math.max(1, state.durationSeconds - state.timerSeconds);
@@ -418,12 +462,12 @@ function finishTest() {
   DOM.reportTimestamp.textContent = `Generated on ${new Date().toLocaleString()}`;
   DOM.wpmResult.textContent = `${wpm} WPM`;
   DOM.accuracyResult.textContent = `${accuracy}%`;
-  DOM.correctResult.textContent = `${correctWords}`;
+  DOM.correctResult.textContent = `${correctWordCount}`;
   DOM.incorrectResult.textContent = `${incorrectWords}`;
   DOM.backspaceResult.textContent = state.student.mode === 'test' ? `${state.backspaceCount}` : 'Not tracked';
   DOM.marksResult.textContent = `${marks}/100`;
 
-  DOM.originalComparison.innerHTML = renderComparisonWords(state.originalWords.slice(0, totalTyped));
+  DOM.originalComparison.innerHTML = renderComparisonWords(state.originalWords.slice(0, totalTypedTokens));
   DOM.typedComparison.innerHTML = renderComparisonWords(state.typedWords, true);
 
   DOM.practiceCard.classList.add('hidden');
@@ -433,14 +477,18 @@ function finishTest() {
 // Export PDF feature removed per user's request.
 
 function openPrintReport() {
-  const totalTyped = state.typedWords.length;
-  const correctWords = state.typedWords.reduce((count, word, index) => {
-    return count + (index < state.originalWords.length && word === state.originalWords[index] ? 1 : 0);
+  const totalTypedTokens = state.typedWords.length;
+  const totalTypedWords = state.typedWords.filter((token) => token !== PARAGRAPH_TOKEN).length;
+  const correctTokenCount = state.typedWords.reduce((count, token, index) => {
+    return count + (index < state.originalWords.length && token === state.originalWords[index] ? 1 : 0);
   }, 0);
-  const incorrectWords = totalTyped - correctWords;
+  const correctWordCount = state.typedWords.reduce((count, token, index) => {
+    return count + (token !== PARAGRAPH_TOKEN && index < state.originalWords.length && token === state.originalWords[index] ? 1 : 0);
+  }, 0);
+  const incorrectWords = totalTypedTokens - correctTokenCount;
   const elapsed = Math.max(1, state.durationSeconds - state.timerSeconds);
-  const wpm = totalTyped > 0 ? Math.round(correctWords / Math.max(1, elapsed / 60)) : 0;
-  const accuracy = totalTyped > 0 ? Math.round((correctWords / totalTyped) * 100) : 100;
+  const wpm = totalTypedWords > 0 ? Math.round(correctWordCount / Math.max(1, elapsed / 60)) : 0;
+  const accuracy = totalTypedTokens > 0 ? Math.round((correctTokenCount / totalTypedTokens) * 100) : 100;
   const marks = Math.round(Math.min(100, (accuracy * 0.7) + (Math.min(wpm, 80) / 80) * 30));
 
   const reportData = {
@@ -454,14 +502,31 @@ function openPrintReport() {
     marks: marks,
     wpm: wpm,
     accuracy: accuracy,
-    total_words: totalTyped,
-    correct_words: correctWords,
+    total_words: totalTypedWords,
+    correct_words: correctWordCount,
     incorrect_words: incorrectWords,
     backspaces: state.student.mode === 'test' ? state.backspaceCount : '0'
   };
 
   localStorage.setItem('typingReportData', JSON.stringify(reportData));
   window.open('./report.html', '_blank');
+}
+
+function goToDashboard() {
+  clearInterval(state.timerId);
+  state.timerStarted = false;
+  DOM.resultsCard.classList.add('hidden');
+  DOM.practiceCard.classList.add('hidden');
+  DOM.setupCard.classList.remove('hidden');
+  DOM.inputField.value = '';
+  DOM.inputField.disabled = false;
+  DOM.assistCard.innerHTML = '';
+  DOM.timerDisplay.textContent = '05:00';
+  DOM.wpmDisplay.textContent = '0 WPM';
+  DOM.accuracyDisplay.textContent = '100%';
+  DOM.progressDisplay.textContent = '0%';
+  DOM.progressFill.style.width = '0%';
+  updateStartButtonState();
 }
 
 function resetSession() {
@@ -487,19 +552,20 @@ function resetSession() {
 }
 
 function renderLessonLines(text) {
-  return text
-    .split(/\n+/)
-    .map((line) => {
-      const words = line.trim().split(/\s+/).filter(Boolean).map(normalizeText);
-      return `<div class="lesson-line">${words.map((word) => {
-        return `<span class="word">${escapeHtml(word)}</span>`;
-      }).join(' ')}</div>`;
-    })
-    .join('');
+  const tokens = tokenizeLessonText(text);
+  return tokens.map((token) => {
+    if (token === PARAGRAPH_TOKEN) {
+      return `<span class="word paragraph-break" aria-hidden="true">⏎</span>`;
+    }
+    return `<span class="word">${escapeHtml(token)}</span>`;
+  }).join(' ');
 }
 
 function renderComparisonWords(words, isTyped = false) {
   return words.map((word, index) => {
+    if (word === PARAGRAPH_TOKEN) {
+      return `<span class="compare-word paragraph-break">⏎</span>`;
+    }
     const isWrong = isTyped && index < state.originalWords.length && word !== state.originalWords[index];
     return `<span class="compare-word${isWrong ? ' incorrect' : ''}">${escapeHtml(word)}</span>`;
   }).join(' ');

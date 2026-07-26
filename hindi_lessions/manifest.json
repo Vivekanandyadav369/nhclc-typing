@@ -1,6 +1,10 @@
 {
   "lessons": [
-    { "id": "lesson-1", "title": "Lesson 1 - Basic Hindi Words", "file": "lesson-1.json" },
+    {
+  "id": "lesson-1",
+  "title": "Lesson 1 - धन का महत्व",
+  "file": "lesson-1.json"
+},
     { "id": "lesson-2", "title": "Lesson 2 - Daily Practice", "file": "lesson-2.json" },
     { "id": "lesson-3", "title": "Lesson 3 - Student Motivation", "file": "lesson-3.json" }
   ]
