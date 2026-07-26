@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Typing Test Report</title>
+    <style>
+      /* Global Reset & Box Sizing */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f6f9;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 20px;
+      }
+
+      /* Print Action Button */
+      .print-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 22px;
+        background-color: #0056b3;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: background-color 0.2s ease;
+        z-index: 1000;
+      }
+
+      .print-btn:hover {
+        background-color: #003d80;
+      }
+
+      /* Strict A4 Page Dimensions */
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        background-color: #ffffff;
+        padding: 12mm 15mm;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* Header Section */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #0056b3;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+      }
+
+      .logo-container {
+        width: 140px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .header-text {
+        text-align: right;
+      }
+
+      .header-text h1 {
+        font-size: 18px;
+        color: #0056b3;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .header-text h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Metadata Bar */
+      .meta-bar {
+        display: flex;
+        justify-content: space-between;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 8px 14px;
+        font-size: 12px;
+        color: #495057;
+        margin-bottom: 18px;
+      }
+
+      .meta-bar span strong {
+        color: #111;
+      }
+
+      /* Section Cards */
+      .section {
+        margin-bottom: 16px;
+      }
+
+      .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #0056b3;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 4px;
+        margin-bottom: 10px;
+      }
+
+      /* Info Grid */
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 20px;
+        background-color: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+
+      .info-item {
+        display: flex;
+      }
+
+      .info-label {
+        width: 110px;
+        color: #6c757d;
+        font-weight: 500;
+      }
+
+      .info-value {
+        flex: 1;
+        color: #212529;
+        font-weight: 600;
+      }
+
+      /* Key Performance Metrics */
+      .metrics-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      .metric-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px;
+        text-align: center;
+        background-color: #ffffff;
+      }
+
+      .metric-card.highlight {
+        background-color: #f0f7ff;
+        border-color: #bbee;
+      }
+
+      .metric-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .metric-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .metric-card.highlight .metric-value {
+        color: #0056b3;
+      }
+
+      /* Word Analysis Table */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #edf2f7;
+      }
+
+      .data-table th {
+        background-color: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .data-table td:last-child,
+      .data-table th:last-child {
+        text-align: right;
+      }
+
+      /* Visual Bars Section */
+      .bar-group {
+        margin-bottom: 8px;
+      }
+
+      .bar-label-container {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 3px;
+      }
+
+      .bar-background {
+        height: 10px;
+        background-color: #e2e8f0;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        background-color: #0056b3;
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+
+      /* Remark Box */
+      .remark-box {
+        background-color: #f8fafc;
+        border-left: 4px solid #0056b3;
+        padding: 10px 14px;
+        border-radius: 0 6px 6px 0;
+        font-size: 12.5px;
+        line-height: 1.4;
+        color: #334155;
+      }
+
+      /* Signatures & Footer */
+      .footer-section {
+        margin-top: auto;
+        padding-top: 20px;
+      }
+
+      .signature-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 15px;
+      }
+
+      .signature-block {
+        text-align: center;
+        width: 200px;
+      }
+
+      .signature-line {
+        border-top: 1px solid #000;
+        margin-bottom: 4px;
+      }
+
+      .signature-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+      }
+
+      .document-footer {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 10.5px;
+        color: #94a3b8;
+      }
+
+      /* Print Specific Styles */
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+
+        body {
+          background-color: #ffffff;
+          padding: 0;
+        }
+
+        .print-btn {
+          display: none !important;
+        }
+
+        .page {
+          box-shadow: none;
+          width: 100%;
+          height: 100vh;
+          padding: 12mm 15mm;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <button class="print-btn" onclick="window.print()">Print Report</button>
+
+    <div class="page" id="report-page">
+      <div>
+        <!-- Header -->
+        <div class="header">
+          <div class="logo-container">
+            <img
+              src="logo.png"
+              alt="Logo"
+              onerror="this.style.display = 'none'"
+            />
+          </div>
+          <div class="header-text">
+            <h1>New Horizons Computer Learning Centre</h1>
+            <h2>Typing Test Performance Report</h2>
+          </div>
+        </div>
+
+        <!-- Metadata Bar -->
+        <div class="meta-bar">
+          <span>Report ID: <strong id="rep-id">-</strong></span>
+          <span>Date: <strong id="rep-date">-</strong></span>
+          <span>Time: <strong id="rep-time">-</strong></span>
+        </div>
+
+        <!-- Student Information -->
+        <div class="section">
+          <div class="section-title">Student Information</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Name</span
+              ><span class="info-value" id="stu-name">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Roll Number</span
+              ><span class="info-value" id="stu-roll">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Language</span
+              ><span class="info-value" id="stu-lang">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Lesson</span
+              ><span class="info-value" id="stu-lesson">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mode</span
+              ><span class="info-value" id="stu-mode">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Duration</span
+              ><span class="info-value" id="stu-duration">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="section">
+          <div class="section-title">Performance Summary</div>
+          <div class="metrics-container">
+            <div class="metric-card highlight">
+              <div class="metric-title">Score</div>
+              <div class="metric-value"><span id="m-marks">0</span>/100</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Speed</div>
+              <div class="metric-value">
+                <span id="m-speed">0</span>
+                <small style="font-size: 12px">WPM</small>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Accuracy</div>
+              <div class="metric-value"><span id="m-accuracy">0</span>%</div>
+            </div>
+            <div class="metric-card highlight">
+              <div class="metric-title">Grade</div>
+              <div class="metric-value" id="m-grade">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Word Analysis & Graphical Bars Side-by-Side -->
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px"
+          class="section"
+        >
+          <div>
+            <div class="section-title">Word Analysis</div>
+            <table class="data-table">
+              <tbody>
+                <tr>
+                  <td>Total Words Typed</td>
+                  <td id="wa-total">0</td>
+                </tr>
+                <tr>
+                  <td>Correct Words</td>
+                  <td id="wa-correct">0</td>
+                </tr>
+                <tr>
+                  <td>Incorrect Words</td>
+                  <td id="wa-incorrect">0</td>
+                </tr>
+                <tr>
+                  <td>Backspaces Used</td>
+                  <td id="wa-backspace">0</td>
+                </tr>
+                <tr>
+                  <td>Completion Rate</td>
+                  <td>100%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="section-title">Performance Breakdown</div>
+            <div style="padding-top: 4px">
+              <div class="bar-group">
+                <div class="bar-label-container">
+                  <span>Accuracy</span><span id="bar-acc-val">0%</span>
+                </div>
+                <div class="bar-background">
+                  <div class="bar-fill" id="bar-acc" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="bar-group" style="margin-top: 12px">
+                <div class="bar-label-container">
+                  <span>Speed Target (40 WPM)</span
+                  ><span id="bar-spd-val">0 WPM</span>
+                </div>
+                <div class="bar-background">
+                  <div class="bar-fill" id="bar-spd" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="bar-group" style="margin-top: 12px">
+                <div class="bar-label-container">
+                  <span>Marks Percentage</span><span id="bar-mrk-val">0%</span>
+                </div>
+                <div class="bar-background">
+                  <div class="bar-fill" id="bar-mrk" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evaluator Remark -->
+        <div class="section">
+          <div class="section-title">Evaluator Remarks</div>
+          <div class="remark-box" id="remark-content">
+            Loading evaluation remarks...
+          </div>
+        </div>
+      </div>
+
+      <!-- Signatures & Footer -->
+      <div class="footer-section">
+        <div class="signature-container">
+          <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-title">Examiner Signature</div>
+          </div>
+        </div>
+        <div class="document-footer">
+          <span>This is a computer-generated performance certificate.</span>
+          <span id="copy-year">NHCLC Typing Master</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function loadReport() {
+        const dataStr = localStorage.getItem("typingReportData");
+        if (!dataStr) {
+          document.getElementById("report-page").innerHTML = `
+          <div style="text-align:center; padding: 100px 20px; font-family: sans-serif;">
+            <h2>No Report Data Found</h2>
+            <p style="color: #666; margin-top: 8px;">Please complete a typing test to generate a performance report.</p>
+          </div>`;
+          return;
+        }
+
+        const data = JSON.parse(dataStr);
+
+        const dateObj = new Date(data.date);
+        const dateStr = dateObj.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        const timeStr = dateObj.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const reportId =
+          "TTR-" +
+          dateObj.getFullYear() +
+          String(dateObj.getMonth() + 1).padStart(2, "0") +
+          String(dateObj.getDate()).padStart(2, "0") +
+          "-" +
+          String(Math.floor(Math.random() * 900) + 100);
+
+        const grade =
+          data.marks >= 90
+            ? "A+"
+            : data.marks >= 80
+              ? "A"
+              : data.marks >= 70
+                ? "B"
+                : data.marks >= 60
+                  ? "C"
+                  : "F";
+
+        // Set Metadata
+        document.getElementById("rep-id").textContent = reportId;
+        document.getElementById("rep-date").textContent = dateStr;
+        document.getElementById("rep-time").textContent = timeStr;
+
+        // Set Student Info
+        document.getElementById("stu-name").textContent =
+          data.student_name || "-";
+        document.getElementById("stu-roll").textContent =
+          data.roll_number || "-";
+        document.getElementById("stu-lang").textContent = data.language || "-";
+        document.getElementById("stu-lesson").textContent = data.lesson || "-";
+        document.getElementById("stu-mode").textContent = data.mode || "-";
+        document.getElementById("stu-duration").textContent =
+          data.duration || "-";
+
+        // Set Metrics
+        document.getElementById("m-marks").textContent = data.marks;
+        document.getElementById("m-speed").textContent = data.wpm;
+        document.getElementById("m-accuracy").textContent = data.accuracy;
+        document.getElementById("m-grade").textContent = grade;
+
+        // Set Word Analysis
+        document.getElementById("wa-total").textContent = data.total_words;
+        document.getElementById("wa-correct").textContent = data.correct_words;
+        document.getElementById("wa-incorrect").textContent =
+          data.incorrect_words;
+        document.getElementById("wa-backspace").textContent = data.backspaces;
+
+        // Set Visual Bars
+        document.getElementById("bar-acc-val").textContent =
+          data.accuracy + "%";
+        document.getElementById("bar-acc").style.width =
+          Math.min(100, data.accuracy) + "%";
+
+        const speedPercent = Math.min(100, (data.wpm / 80) * 100);
+        document.getElementById("bar-spd-val").textContent = data.wpm + " WPM";
+        document.getElementById("bar-spd").style.width = speedPercent + "%";
+
+        document.getElementById("bar-mrk-val").textContent = data.marks + "%";
+        document.getElementById("bar-mrk").style.width =
+          Math.min(100, data.marks) + "%";
+
+        // Set Remarks
+        const isHighAccuracy = data.accuracy >= 95;
+        document.getElementById("remark-content").innerHTML = `
+        <strong>${isHighAccuracy ? "Excellent Performance." : "Good Effort."}</strong><br>
+        ${
+          isHighAccuracy
+            ? "Your typing accuracy is outstanding. Focus on maintaining this precision while gradually increasing your overall speed."
+            : "Keep practicing to improve accuracy. Focus on hitting the correct keys without looking down at the keyboard."
+        }
+      `;
+
+        // Footer
+        document.getElementById("copy-year").textContent =
+          `NHCLC Typing Master © ${dateObj.getFullYear()}`;
+
+        // Auto Print Trigger
+        setTimeout(() => {
+          window.print();
+        }, 500);
+      }
+
+      window.onload = loadReport;
+    </script>
+  </body>
+</html>

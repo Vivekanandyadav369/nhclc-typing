@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Professional Offline Hindi Typing Master</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+      integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div>
+          <h1>NHCLC Typing Master</h1>
+          <p>
+            Modern, offline, and ready for learning or timed typing practice.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="theme-toggle" class="secondary-btn" type="button">
+            ☀️ Day Mode
+          </button>
+        </div>
+      </header>
+
+      <section id="setup-card" class="card">
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="student-name">Student Name</label>
+            <input id="student-name" placeholder="Enter your name" />
+          </div>
+          <div class="form-group">
+            <label for="roll-number">Roll Number</label>
+            <input id="roll-number" placeholder="Enter roll number" />
+          </div>
+          <div class="form-group">
+            <label for="language-select">Select Language</label>
+            <select id="language-select">
+              <option value="english" selected>English</option>
+              <option value="hindi">Hindi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="lesson-select">Select Lesson</label>
+            <select id="lesson-select">
+              <option value="">Loading lessons...</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top: 16px">
+          <div class="form-group">
+            <label for="mode-select">Typing Mode</label>
+            <select id="mode-select">
+              <option value="">Select mode</option>
+              <option value="learning" selected>Learning Mode</option>
+              <option value="test">Test Mode</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top: 16px">
+          <div class="form-group">
+            <label for="duration-select">Duration</label>
+            <select id="duration-select">
+              <option value="5">5 Minutes</option>
+              <option value="10">10 Minutes</option>
+              <option value="15" selected>15 Minutes</option>
+              <option value="20">20 Minutes</option>
+              <option value="25">25 Minutes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button id="start-button" class="primary-btn" disabled>
+              Start Practice
+            </button>
+            <div class="helper-text">
+              All fields must be completed before you begin.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="practice-card" class="card hidden">
+        <div class="status-bar">
+          <div class="pill">Lesson: <span id="lesson-title">--</span></div>
+          <div class="pill">Mode: <span id="mode-title">--</span></div>
+          <div class="pill">Timer: <span id="timer-display">05:00</span></div>
+        </div>
+        <div class="stats-row">
+          <div class="pill">WPM: <span id="wpm-display">0 WPM</span></div>
+          <div class="pill">
+            Accuracy: <span id="accuracy-display">100%</span>
+          </div>
+          <div class="pill">
+            Progress: <span id="progress-display">0%</span>
+          </div>
+        </div>
+        <div class="progress-track" id="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div id="assist-card" class="assist-card"></div>
+        <div id="text-display" class="text-display"></div>
+        <textarea
+          id="input-field"
+          placeholder="Start typing here..."
+          aria-label="Typing input"
+        ></textarea>
+        <div class="actions">
+          <button id="submit-button" class="secondary-btn">
+            Finish Practice
+          </button>
+          <button id="reset-button" class="secondary-btn">Reset</button>
+        </div>
+      </section>
+
+      <section id="results-card" class="card hidden">
+        <div class="results-hero no-print">
+          <div>
+            <p class="report-kicker">Typing report</p>
+            <h2 id="report-title" style="margin: 0">Performance Report</h2>
+            <div id="report-subtitle" class="report-subtitle">
+              Student details
+            </div>
+          </div>
+          <div class="report-actions">
+            <button
+              id="print-report-button"
+              class="primary-btn"
+              type="button"
+              style="margin-left: 8px"
+            >
+              Print Report
+            </button>
+          </div>
+        </div>
+        <div id="report-timestamp" class="report-timestamp">
+          Generated on --
+        </div>
+        <div class="results-grid">
+          <div class="metric-card">
+            <span class="label">Student Name</span>
+            <div class="value" id="student-name-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Roll Number</span>
+            <div class="value" id="student-roll-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Lesson</span>
+            <div class="value" id="lesson-name-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Mode</span>
+            <div class="value" id="mode-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Duration</span>
+            <div class="value" id="duration-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Marks</span>
+            <div class="value" id="marks-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">WPM</span>
+            <div class="value" id="wpm-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Accuracy</span>
+            <div class="value" id="accuracy-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Correct Words</span>
+            <div class="value" id="correct-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Incorrect Words</span>
+            <div class="value" id="incorrect-result">-</div>
+          </div>
+          <div class="metric-card">
+            <span class="label">Backspaces</span>
+            <div class="value" id="backspace-result">-</div>
+          </div>
+        </div>
+        <div class="comparison-grid">
+          <div class="compare-card">
+            <h3>Original Text</h3>
+            <div id="original-comparison"></div>
+          </div>
+          <div class="compare-card">
+            <h3>Your Typed Text</h3>
+            <div id="typed-comparison"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
