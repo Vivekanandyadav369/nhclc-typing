@@ -1,10 +1,10 @@
 {
   "lessons": [
     {
-      "id": "english-lesson-1",
-      "title": "English Lesson 1 - Democratic Reforms",
-      "file": "lesson-1.json"
+      "id": "english-lesson-2",
+      "title": "English Lesson 2 - Democratic Reforms",
+      "file": "lesson-2.json"
     },
-    { "id": "english-lesson-2", "title": "English Lesson 2 - Daily Practice", "file": "lesson-2.json" }
+    { "id": "english-lesson-1", "title": "English Lesson 1 - Football Match", "file": "lesson-1.json" }
   ]
 }
