@@ -1,10 +1,29 @@
 {
   "lessons": [
     {
+      "id": "english-lesson-1",
+      "title": "English Lesson 1 - Football Match",
+      "file": "lesson-1.json"
+    },
+    {
       "id": "english-lesson-2",
       "title": "English Lesson 2 - Democratic Reforms",
       "file": "lesson-2.json"
     },
-    { "id": "english-lesson-1", "title": "English Lesson 1 - Football Match", "file": "lesson-1.json" }
+    {
+      "id": "english-lesson-3",
+      "title": "English Lesson 3 - Television and Tobacco",
+      "file": "lesson-3.json"
+    },
+    {
+      "id": "english-lesson-4",
+      "title": "English Lesson 4 - Television, Censorship and Feminism",
+      "file": "lesson-4.json"
+    },
+    {
+      "id": "english-lesson-5",
+      "title": "English Lesson 5 - Indian Television",
+      "file": "lesson-5.json"
+    }
   ]
 }
